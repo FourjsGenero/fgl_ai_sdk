@@ -19,7 +19,7 @@ you must evaluate the security, privacy, and confidentiality implications of sha
 information with these providers. The authors are not liable for any data breaches or misuse
 of information by third-party AI entities.
 
-## Supported AIs
+## Supported AI providers and services
 
 Supported AI Providers:
 - Anthropic
@@ -29,13 +29,19 @@ Supported AI Providers:
 - Ollama
 
 Supported AI services:
+
 - Text Generation / Conversations / Chat
-  - Anthropic with `aim_anthropic.4gl`
-  - OpenAI with `aim_openai.4gl`
-  - Gemini with `aim_gemini.4gl`
+  - Anthropic/Claude with `aim_anthropic.4gl`
+  - OpenAI/GPT with `aim_openai.4gl`
+  - Google/Gemini with `aim_gemini.4gl`
   - Mistral with `aim_mistral.4gl`
   - Ollama with `aim_ollama.4gl`
+
 - Text Embedding with `aim_vector.4gl`
+  - OpenAI text embedding
+  - Gemini text embedding
+  - Mistral text embedding
+  - VoyageAI text embedding
 
 ## License
 
