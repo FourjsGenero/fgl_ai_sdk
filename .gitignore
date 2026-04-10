@@ -1,7 +1,9 @@
 *.42*
-bin
+bin/
+com/
 *.tmp
 *.log
 *.4pwdb
 *.4pwvs
 *.4pwcfg
+.mcp.json

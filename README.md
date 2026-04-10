@@ -2,7 +2,8 @@
 
 ## Description
 
-This project contains a set of Genero BDL modules to interface with AI provider APIs.
+This project contains a set of Genero BDL modules to interface with AI provider APIs,
+organized as the `com.fourjs.aim` package.
 
 ## Disclaimer
 
@@ -41,11 +42,35 @@ Supported AI services:
   - Mistral with `aim_mistral.4gl`
   - Ollama with `aim_ollama.4gl`
 
-- Text Embedding with `aim_vector.4gl`
+- Text Embedding with `aim_vectors.4gl`
   - OpenAI text embedding
   - Gemini text embedding
   - Mistral text embedding
   - VoyageAI text embedding
+
+## Project structure
+
+```
+fgl_ai_sdk/
+|-- aim_common.4gl          -- Shared utilities, HTTP infrastructure, common types
+|-- aim_anthropic.4gl       -- Anthropic/Claude API
+|-- aim_gemini.4gl          -- Google/Gemini API
+|-- aim_openai.4gl          -- OpenAI/GPT API
+|-- aim_mistral.4gl         -- Mistral API
+|-- aim_ollama.4gl          -- Ollama API
+|-- aim_vectors.4gl         -- Text embedding (multi-provider)
+|-- test_anthropic.4gl      -- Test program for Anthropic
+|-- test_gemini.4gl         -- Test program for Gemini
+|-- test_openai.4gl         -- Test program for OpenAI
+|-- test_mistral.4gl        -- Test program for Mistral
+|-- test_ollama.4gl         -- Test program for Ollama
+|-- test_vectors.4gl        -- Test program for text embeddings
+|-- Makefile
+|-- com/fourjs/aim/         -- Compiled package modules (.42m)
+```
+
+All library modules belong to the `com.fourjs.aim` package. The compiled `.42m` files are
+placed in `com/fourjs/aim/` by the build. Test programs compile to the project root directory.
 
 ## License
 
@@ -73,17 +98,36 @@ In order to have access to an AI provider API, register and get an API Key.
 - Mistral:
   - https://docs.mistral.ai/getting-started/quickstart
 
-Define the following environment variables, according to the AI provider:
+### API key configuration
 
-- Anthropic/Claude:
-  - ANTHROPIC_API_KEY: The API Key
-- OpenAI/GPT:
-  - OPENAI_API_KEY: The API Key
+API keys can be configured in two ways. The FGLPROFILE entry is checked first;
+if not found, the environment variable is used as a fallback.
+
+| Provider   | FGLPROFILE entry        | Environment variable   |
+|------------|-------------------------|------------------------|
+| Anthropic  | `aim.apikey.anthropic`  | `ANTHROPIC_API_KEY`    |
+| OpenAI     | `aim.apikey.openai`     | `OPENAI_API_KEY`       |
+| Gemini     | `aim.apikey.gemini`     | `GEMINI_API_KEY`       |
+| Mistral    | `aim.apikey.mistral`    | `MISTRAL_API_KEY`      |
+| VoyageAI   | `aim.apikey.voyageai`   | `VOYAGE_API_KEY`       |
+
+Ollama does not require an API key for local instances.
+
+Additional environment variables for specific providers:
+
 - Google/Gemini:
-  - GOOGLE_PROJECT_ID: The Google project ID
-  - GEMINI_API_KEY: The API Key
-- Mistral:
-  - MISTRAL_API_KEY: The API Key
+  - `GOOGLE_PROJECT_ID`: The Google project ID
+- OpenAI/GPT:
+  - `OPENAI_ORGANIZATION_ID`: The OpenAI organization ID (optional)
+  - `OPENAI_PROJECT_ID`: The OpenAI project ID (optional)
+
+**FGLPROFILE example:**
+
+```
+aim.apikey.anthropic = "sk-ant-..."
+aim.apikey.openai    = "sk-..."
+aim.apikey.gemini    = "AI..."
+```
 
 ### Compilation
 
@@ -91,93 +135,124 @@ Define the following environment variables, according to the AI provider:
 make clean all
 ```
 
+This compiles the package libraries into `com/fourjs/aim/` and the test programs
+into the project root directory.
+
 ### Quick Test
 
-After compilation, you can directly run one of the aim_* modules:
-Each module includes a `main()` function that does some tests.
+After compilation, you can run one of the test programs:
 
 ```
 $ export ANTHROPIC_API_KEY="sk-ant-..."
 
-$ fglrun aim_anthropic.42m
+$ fglrun test_anthropic.42m
 The exact geographic coordinates of London are:
 
-- **Latitude: 51.5074° N**
-- **Longitude: -0.1278° W** (or 0.1278° E)
+- **Latitude: 51.5074 N**
+- **Longitude: -0.1278 W** (or 0.1278 E)
 
 These coordinates point to the city center of London, England.
 The negative longitude value indicates it is located west of
-the Prime Meridian (0° longitude), which runs through Greenwich
+the Prime Meridian (0 longitude), which runs through Greenwich
 in London.
+```
+
+Available test targets:
+```bash
+make test-anthropic
+make test-gemini
+make test-openai
+make test-mistral
+make test-ollama
+make test-vectors
 ```
 
 ## Programming API
 
+### Importing the package
+
+Programs that use the SDK must import the modules they need from the `com.fourjs.aim`
+package:
+
+```4gl
+IMPORT FGL com.fourjs.aim.aim_common
+IMPORT FGL com.fourjs.aim.aim_anthropic
+```
+
+Shared functions such as `initialize()`, `cleanup()`, and `get_error_message()` are
+in the `aim_common` module. Provider-specific types and functions are in the respective
+provider module.
+
 ### Example: Text completion with Anthropic Claude
 
 ```4gl
-IMPORT FGL aim_anthropic
+IMPORT FGL com.fourjs.aim.aim_common
+IMPORT FGL com.fourjs.aim.aim_anthropic
 
-DEFINE client aim_anthropic.t_client
-DEFINE request aim_anthropic.t_message_request
-DEFINE response aim_anthropic.t_response
-DEFINE x, tx, s INTEGER
+FUNCTION main()
+    DEFINE client aim_anthropic.t_client
+    DEFINE request aim_anthropic.t_message_request
+    DEFINE response aim_anthropic.t_response
+    DEFINE x, s INTEGER
 
-CALL aim_anthropic.initialize()
+    CALL aim_common.initialize()
 
-CALL client.set_defaults("claude-haiku-4-5")
-LET client.connection.secret_key = "...." -- API Key
+    CALL client.set_defaults("claude-haiku-4-5")
 
-CALL request.set_defaults(client)
-CALL request.set_system_message("You are a Math teacher.")
-LET x = request.append_user_message("Answer with precise instructions.")
-LET x = request.append_user_message("How to compute the area of a circle?")
-LET s = client.create_message(request,response)
-IF s == 0 THEN
-   DISPLAY response.get_content_text(1)
-ELSE
-   DISPLAY aim_anthropic.get_error_message(s)
-   DISPLAY "HTTP post status: ", aim_anthropic.get_last_http_post_status()
-   DISPLAY "HTTP post description : ", aim_anthropic.get_last_http_post_description()
-END IF
+    CALL request.set_defaults(client)
+    CALL request.set_system_message("You are a Math teacher.")
+    LET x = request.append_user_message("Answer with precise instructions.")
+    LET x = request.append_user_message("How to compute the area of a circle?")
+    LET s = client.create_message(request,response)
+    IF s == 0 THEN
+       DISPLAY response.get_content_text(1)
+    ELSE
+       DISPLAY aim_common.get_error_message(s)
+       DISPLAY "HTTP post status: ", aim_common.get_last_http_post_status()
+       DISPLAY "HTTP post description : ", aim_common.get_last_http_post_description()
+    END IF
 
-CALL aim_anthropic.cleanup()
+    CALL aim_common.cleanup()
+END FUNCTION
 ```
 
 ### Example: Text embedding generation with Gemini Embedding
 
 ```4gl
-IMPORT FGL aim_vectors
+IMPORT FGL com.fourjs.aim.aim_common
+IMPORT FGL com.fourjs.aim.aim_vectors
 
-DEFINE s INTEGER
-DEFINE client aim_vectors.t_client
-DEFINE request aim_vectors.t_text_embedding_request
-DEFINE response aim_vectors.t_text_embedding_response
-DEFINE source TEXT
-DEFINE vector STRING
+FUNCTION main()
+    DEFINE s INTEGER
+    DEFINE client aim_vectors.t_client
+    DEFINE request aim_vectors.t_text_embedding_request
+    DEFINE response aim_vectors.t_text_embedding_response
+    DEFINE source TEXT
+    DEFINE vector STRING
 
-IF num_args()<>1 THEN
-   DISPLAY SFMT("Usage: fglrun %1 <text-file>", arg_val(0))
-   EXIT PROGRAM 1
-END IF
+    IF num_args()<>1 THEN
+       DISPLAY SFMT("Usage: fglrun %1 <text-file>", arg_val(0))
+       EXIT PROGRAM 1
+    END IF
 
-CALL aim_vectors.initialize()
+    CALL aim_common.initialize()
 
-CALL client.set_defaults("gemini","gemini-embedding-001")
-CALL request.set_defaults(client,NULL)
+    CALL client.set_defaults("gemini","gemini-embedding-001")
+    CALL request.set_defaults(client,NULL)
 
-LOCATE source IN FILE arg_val(1)
-CALL request.set_source(source)
-LET s = client.send_text_embedding_request(request,response)
-IF s == 0 THEN
-   LET vector = response.get_vector()
-   DISPLAY vector
-ELSE
-   DISPLAY aim_vectors.get_error_message(s)
-   LET vector = NULL
-END IF
+    LOCATE source IN FILE arg_val(1)
+    CALL request.set_source(source)
+    LET s = client.send_text_embedding_request(request,response)
+    IF s == 0 THEN
+       LET vector = response.get_vector()
+       DISPLAY vector
+    ELSE
+       DISPLAY aim_common.get_error_message(s)
+       LET vector = NULL
+    END IF
 
-CALL aim_vectors.cleanup()
+    CALL aim_common.cleanup()
+END FUNCTION
 ```
 
 ## TODO:
