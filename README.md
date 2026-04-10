@@ -109,7 +109,7 @@ in London.
 
 ## Programming API
 
-### Example: Text completion with Anthropic
+### Example: Text completion with Anthropic Claude
 
 ```4gl
 IMPORT FGL aim_anthropic
@@ -140,7 +140,7 @@ END IF
 CALL aim_anthropic.cleanup()
 ```
 
-### Example: Text embedding generation with Anthropic
+### Example: Text embedding generation with Gemini Embedding
 
 ```4gl
 IMPORT FGL aim_vectors
