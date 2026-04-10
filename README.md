@@ -22,8 +22,8 @@ of information by third-party AI entities.
 ## Supported AI providers and services
 
 Supported AI Providers:
-- Anthropic
-- OpenAI
+- Anthropic/Claude
+- OpenAI/GPT
 - Google/Gemini
 - Mistral
 - Ollama
@@ -52,13 +52,60 @@ This source code is under [MIT license](./LICENSE)
 * Latest Genero version
 * GNU Make
 
-## Compilation from command line
+## Usage
 
-1. make clean all
+### Register to AI provider
 
-## Run in direct mode with GDC
+In order to have access to an AI provider API, register and get an API Key.
 
-1. make run
+**WARNING**: API Keys need to be be kept secret.
+
+- Anthropic/Claude:
+  - https://platform.claude.com/docs/en/get-started
+- OpenAI/GPT:
+  - https://developers.openai.com/api/docs/quickstart
+- Google/Gemini:
+  - https://ai.google.dev/gemini-api/docs/quickstart
+- Mistral:
+  - https://docs.mistral.ai/getting-started/quickstart
+
+Define the following environment variables, according to the AI provider:
+
+- Anthropic/Claude:
+  - ANTHROPIC_API_KEY: The API Key
+- OpenAI/GPT:
+  - OPENAI_API_KEY: The API Key
+- Google/Gemini:
+  - GOOGLE_PROJECT_ID: The Google project ID
+  - GEMINI_API_KEY: The API Key
+- Mistral:
+  - MISTRAL_API_KEY: The API Key
+
+### Compilation
+
+```bash
+make clean all
+```
+
+### Quick Test
+
+After compilation, you can directly run one of the aim_* modules:
+Each module includes a `main()` function that does some tests.
+
+```
+$ export ANTHROPIC_API_KEY="sk-ant-..."
+
+$ fglrun aim_anthropic.42m
+The exact geographic coordinates of London are:
+
+- **Latitude: 51.5074° N**
+- **Longitude: -0.1278° W** (or 0.1278° E)
+
+These coordinates point to the city center of London, England.
+The negative longitude value indicates it is located west of
+the Prime Meridian (0° longitude), which runs through Greenwich
+in London.
+```
 
 ## Programming API
 
