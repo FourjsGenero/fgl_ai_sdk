@@ -2,7 +2,7 @@
 
 ## Description
 
-This project contains a set of Genero BDL modules to interface with AI providers APIs.
+This project contains a set of Genero BDL modules to interface with AI provider APIs.
 
 ## Disclaimer
 
@@ -34,7 +34,7 @@ Supported AI Providers:
 
 Supported AI services:
 
-- Text Generation / Conversations / Chat
+- Text Generation
   - Anthropic/Claude with `aim_anthropic.4gl`
   - OpenAI/GPT with `aim_openai.4gl`
   - Google/Gemini with `aim_gemini.4gl`
