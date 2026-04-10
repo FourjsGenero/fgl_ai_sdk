@@ -6,18 +6,22 @@ This project contains a set of Genero BDL modules to interface with AI providers
 
 ## Disclaimer
 
-This source code is provided "as is" and "with all faults." The authors make no guarantees
-or warranties of any kind concerning the safety, reliability, or suitability of the software
-for any main or particular purpose.
+THIS SOURCE CODE IS PROVIDED "AS IS" AND "WITH ALL FAULTS." FOURJS AND THE AUTHORS MAKE NO
+GUARANTEES OR WARRANTIES OF ANY KIND CONCERNING THE SAFETY, RELIABILITY, OR SUITABILITY OF
+THE SOFTWARE FOR ANY MAIN OR PARTICULAR PURPOSE.
 
-This SDK is a connector and requires a third-party AI provider, a compatible Large Language
-Model (LLM), and a valid API key. Users are solely responsible for any costs, usage limits,
-and terms of service associated with their chosen AI provider.
+IN NO EVENT SHALL FOURJS, THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
+OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
+OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Using this software involves transmitting data to third-party services. Before proceeding,
-you must evaluate the security, privacy, and confidentiality implications of sharing sensitive
-information with these providers. The authors are not liable for any data breaches or misuse
-of information by third-party AI entities.
+THIS SDK IS A CONNECTOR AND REQUIRES A THIRD-PARTY AI PROVIDER, A COMPATIBLE LARGE LANGUAGE
+MODEL (LLM), AND A VALID API KEY. USERS ARE SOLELY RESPONSIBLE FOR ANY COSTS, USAGE LIMITS,
+AND TERMS OF SERVICE ASSOCIATED WITH THEIR CHOSEN AI PROVIDER.
+
+USING THIS SOFTWARE INVOLVES TRANSMITTING DATA TO THIRD-PARTY SERVICES. BEFORE PROCEEDING,
+YOU MUST EVALUATE THE SECURITY, PRIVACY, AND CONFIDENTIALITY IMPLICATIONS OF SHARING SENSITIVE
+INFORMATION WITH THESE PROVIDERS. THE AUTHORS ARE NOT LIABLE FOR ANY DATA BREACHES OR MISUSE
+OF INFORMATION BY THIRD-PARTY AI ENTITIES.
 
 ## Supported AI providers and services
 
