@@ -329,11 +329,11 @@ PUBLIC FUNCTION (client t_client) send_text_embedding_request(
     LET s = _check_client_info(client)
     IF s<0 THEN RETURN s END IF
     LET json_in = util.JSONObject.parse(util.JSON.stringifyOmitNulls(request))
-display "json_in:\n", util.JSON.format( json_in.toString() )
+--display "json_in:\n", util.JSON.format( json_in.toString() )
     CALL _post_request_command_json_to_json(client,"embeddings",json_in)
          RETURNING s, json_out
     IF s<0 THEN RETURN s END IF
-display "json_out:\n", util.JSON.format( json_out.toString() )
+--display "json_out:\n", util.JSON.format( json_out.toString() )
     CALL json_out.toFGL(response)
     RETURN 0
 END FUNCTION
