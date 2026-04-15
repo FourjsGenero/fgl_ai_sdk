@@ -288,6 +288,9 @@ PUBLIC TYPE t_text_embedding_response RECORD
             index INTEGER,
             embedding DYNAMIC ARRAY OF FLOAT
         END RECORD,
+        embedding RECORD -- Gemini
+            values DYNAMIC ARRAY OF FLOAT
+        END RECORD,
         model STRING,
         usage RECORD
             prompt_tokens INTEGER,
@@ -341,9 +344,11 @@ END FUNCTION
 PUBLIC FUNCTION (response t_text_embedding_response) get_vector() RETURNS STRING
     IF response.data.getLength()>0 THEN
        RETURN util.JSON.stringify(response.data[1].embedding)
-    ELSE
-       RETURN NULL
     END IF
+    IF response.embedding.values.getLength()>0 THEN -- Gemini
+       RETURN util.JSON.stringify(response.embedding.values)
+    END IF
+    RETURN NULL
 END FUNCTION
 
 PUBLIC FUNCTION main()
