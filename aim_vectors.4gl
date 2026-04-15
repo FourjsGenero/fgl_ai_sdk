@@ -277,6 +277,7 @@ PUBLIC TYPE t_text_embedding_request RECORD
         content t_content, -- Gemini
         model STRING,
         dimensions INTEGER,
+        output_dimensionality INTEGER, -- Gemini
         encoding_format STRING,
         user STRING
     END RECORD
@@ -305,7 +306,12 @@ PUBLIC FUNCTION (request t_text_embedding_request) set_defaults(
     INITIALIZE request.* TO NULL
     LET request.model = client.request.model
     IF dimensions IS NOT NULL THEN
-        LET request.dimensions = dimensions
+        CASE
+        WHEN request.model MATCHES "gemini*"
+            LET request.output_dimensionality = dimensions
+        OTHERWISE
+            LET request.dimensions = dimensions
+        END CASE
     END IF
 END FUNCTION
 
@@ -376,7 +382,7 @@ PUBLIC FUNCTION main()
     --CALL request.set_defaults(client,NULL)
 
     CALL client.set_defaults("gemini","gemini-embedding-001")
-    CALL request.set_defaults(client,NULL)
+    CALL request.set_defaults(client,1024)
 
     LOCATE source IN FILE arg_val(1)
     CALL request.set_source(source)
