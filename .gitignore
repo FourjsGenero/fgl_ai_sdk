@@ -7,3 +7,4 @@ com/
 *.4pwvs
 *.4pwcfg
 .mcp.json
+*.apikey

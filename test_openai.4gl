@@ -1,4 +1,6 @@
-IMPORT FGL test_common
+PACKAGE com.fourjs.aim
+
+IMPORT FGL com.fourjs.aim.test_common
 IMPORT FGL com.fourjs.aim.aim_common
 IMPORT FGL com.fourjs.aim.aim_openai
 

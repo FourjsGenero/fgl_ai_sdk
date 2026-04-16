@@ -1,3 +1,5 @@
+PACKAGE com.fourjs.aim
+
 IMPORT FGL com.fourjs.aim.aim_common
 
 PUBLIC CONSTANT MODE_HELP    = 0

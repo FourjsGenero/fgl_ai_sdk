@@ -1,11 +1,11 @@
 {
-  "name": "fgl_ai_sdk",
-  "version": "1.0.0",
+  "name": "aim",
+  "version": "1.0.1",
   "root": "com/fourjs/aim",
   "description": "Genero BDL SDK for AI provider APIs (Anthropic, OpenAI, Gemini, Mistral, Ollama)",
-  "author": "sb@4js.com",
+  "author": "sb@4js.com,mifo@4js.com",
   "license": "MIT",
   "genero": "^6.0.0",
-  "files": ["*.42m"],
-  "docs": ["USERGUIDE.md"]
+  "docs": ["USERGUIDE.md"],
+  "programs": ["test_anthropic", "test_gemini", "test_openai", "test_mistral", "test_ollama", "test_vectors"]
 }
