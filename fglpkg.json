@@ -1,6 +1,6 @@
 {
   "name": "aim",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "root": "com/fourjs/aim",
   "description": "Genero BDL SDK for AI provider APIs (Anthropic, OpenAI, Gemini, Mistral, Ollama)",
   "author": "sb@4js.com,mifo@4js.com",

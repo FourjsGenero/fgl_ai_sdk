@@ -70,9 +70,8 @@ fgl_ai_sdk/
 |-- com/fourjs/aim/         -- Compiled package modules (.42m)
 ```
 
-All library modules belong to the `com.fourjs.aim` package. The compiled `.42m` files are
-placed in `com/fourjs/aim/` by the build. Test programs and the shared `test_common` module
-compile to the project root directory.
+All modules belong to the `com.fourjs.aim` package. The compiled `.42m` files are
+placed in `com/fourjs/aim/` by the build.
 
 ## License
 
@@ -137,37 +136,37 @@ aim.apikey.gemini    = "AI..."
 make clean all
 ```
 
-This compiles the package libraries into `com/fourjs/aim/` and the test programs
-into the project root directory.
+This compiles all modules (libraries and test programs) into `com/fourjs/aim/`.
 
 ### Running the test programs
 
 All test programs support a common command-line interface:
 
 ```
-fglrun <test_program> [OPTIONS] [key=value ...]
+fglrun com/fourjs/aim/<test_program> [OPTIONS] [key=value ...]
 ```
 
 **Options:**
 - `--default` - Run with default hard-coded parameters
-- `--help` - Display usage with all available parameters and their defaults
+- `--help` - Display usage with all available parameters, defaults, and
+  required environment variables / FGLPROFILE entries
 - No arguments displays the usage message
 
 **Examples:**
 
 ```bash
-# Show usage and available parameters for Anthropic
-$ fglrun test_anthropic.42m --help
+# Show usage, available parameters, and environment setup for Anthropic
+$ fglrun com/fourjs/aim/test_anthropic.42m --help
 
 # Run with defaults (tool calling mode)
 $ export ANTHROPIC_API_KEY="sk-ant-..."
-$ fglrun test_anthropic.42m --default
+$ fglrun com/fourjs/aim/test_anthropic.42m --default
 
 # Custom parameters
-$ fglrun test_anthropic.42m model=claude-sonnet-4-5 prompt="What is 2+2?" tools=false
+$ fglrun com/fourjs/aim/test_anthropic.42m model=claude-sonnet-4-5 prompt="What is 2+2?" tools=false
 
 # Override just the prompt (other params keep their defaults)
-$ fglrun test_anthropic.42m prompt="How much is 25 multiplied by 5?"
+$ fglrun com/fourjs/aim/test_anthropic.42m prompt="How much is 25 multiplied by 5?"
 ```
 
 Each test program documents its own parameters via `--help`. Common parameters
@@ -188,7 +187,23 @@ Some providers support additional parameters (e.g., `top_k`, `seed`,
 and `tcp_port` for connecting to custom server instances. The vectors test
 accepts `provider`, `model`, `dimensions`, and `source` parameters.
 
-**Make targets** (run with `--default`):
+**Make targets:**
+
+Make targets run with `--default` when no `ARGS` are specified. Pass the `ARGS`
+variable to override:
+
+```bash
+# Run with defaults
+make test-anthropic
+
+# Pass custom arguments
+make test-anthropic ARGS="prompt='What is 2+2?' tools=false"
+
+# Show help
+make test-anthropic ARGS="--help"
+```
+
+Available targets:
 
 ```bash
 make test-anthropic

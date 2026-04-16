@@ -15,11 +15,18 @@ across multiple providers through a consistent module structure.
 | **Text Generation** | `aim_ollama` | Ollama (local) |
 | **Text Embedding** | `aim_vectors` | OpenAI, Gemini, Mistral, VoyageAI |
 | **Shared Utilities** | `aim_common` | All providers |
+| **Test Utilities** | `test_common` | Shared CLI parsing, usage display, tool callbacks |
+| **Test Program** | `test_anthropic` | Anthropic / Claude |
+| **Test Program** | `test_openai` | OpenAI / GPT |
+| **Test Program** | `test_gemini` | Google / Gemini |
+| **Test Program** | `test_mistral` | Mistral |
+| **Test Program** | `test_ollama` | Ollama (local) |
+| **Test Program** | `test_vectors` | Text Embeddings |
 
 Each provider module follows the same pattern: create a client, configure a request,
 send it, and process the response. The `aim_common` module provides shared lifecycle
 management, error handling, HTTP infrastructure, and common types used across all
-providers.
+providers. All modules belong to the `com.fourjs.aim` package.
 
 For detailed API documentation and code examples, see the [README](README.md).
 
@@ -180,6 +187,74 @@ If you are not using `fglpkg`, you can install the package manually:
 2. Run `make clean all` to compile
 3. Add the project root directory to your `FGLLDPATH` environment variable so that
    Genero can resolve `com/fourjs/aim/*.42m`
+
+---
+
+## Test Programs
+
+The SDK includes test programs for each provider. All test programs share a common
+command-line interface provided by the `test_common` module, and all compile into
+the `com/fourjs/aim/` package directory alongside the library modules.
+
+### Command-Line Interface
+
+```
+fglrun com/fourjs/aim/<test_program>.42m [OPTIONS] [key=value ...]
+```
+
+| Option | Description |
+|--------|-------------|
+| `--default` | Run with default hard-coded parameters |
+| `--help` | Display usage with all parameters, defaults, and required environment variables |
+| *(no arguments)* | Display the usage message |
+
+Each test program's `--help` output documents the available parameters, their default
+values, and the environment variables or FGLPROFILE entries required for that provider.
+
+### Using Make Targets
+
+Make targets default to `--default` when no `ARGS` are specified:
+
+```bash
+# Run with defaults
+make test-anthropic
+
+# Pass custom arguments
+make test-anthropic ARGS="model=claude-sonnet-4-5 prompt='What is 2+2?' tools=false"
+
+# Show help for a provider
+make test-gemini ARGS="--help"
+```
+
+### Common Parameters
+
+Text generation test programs share these parameters (defaults vary by provider):
+
+| Parameter | Description |
+|-----------|-------------|
+| `model` | Model name |
+| `system` | System message / instructions |
+| `prompt` | User prompt |
+| `max_tokens` | Maximum output tokens |
+| `temperature` | Sampling temperature (0.0-1.0) |
+| `top_p` | Nucleus sampling threshold |
+| `tools` | Enable tool calling (`true`/`false`) |
+
+Some providers support additional parameters such as `top_k`, `seed`,
+`frequency_penalty`, and `presence_penalty`. The Ollama test exposes `base_url`
+and `tcp_port` for connecting to custom server instances. The vectors test accepts
+`provider`, `model`, `dimensions`, and `source` parameters.
+
+### Available Test Targets
+
+| Target | Provider | Default Model |
+|--------|----------|---------------|
+| `make test-anthropic` | Anthropic / Claude | `claude-haiku-4-5` |
+| `make test-openai` | OpenAI / GPT | `gpt-4o` |
+| `make test-gemini` | Google / Gemini | `gemini-3-flash-preview` |
+| `make test-mistral` | Mistral | `mistral-large-latest` |
+| `make test-ollama` | Ollama | `llama3.1` |
+| `make test-vectors` | Text Embeddings | `gemini-embedding-001` |
 
 ---
 
