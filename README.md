@@ -59,6 +59,7 @@ fgl_ai_sdk/
 |-- aim_mistral.4gl         -- Mistral API
 |-- aim_ollama.4gl          -- Ollama API
 |-- aim_vectors.4gl         -- Text embedding (multi-provider)
+|-- test_common.4gl         -- Shared test utilities (arg parsing, usage, tool callbacks)
 |-- test_anthropic.4gl      -- Test program for Anthropic
 |-- test_gemini.4gl         -- Test program for Gemini
 |-- test_openai.4gl         -- Test program for OpenAI
@@ -70,7 +71,8 @@ fgl_ai_sdk/
 ```
 
 All library modules belong to the `com.fourjs.aim` package. The compiled `.42m` files are
-placed in `com/fourjs/aim/` by the build. Test programs compile to the project root directory.
+placed in `com/fourjs/aim/` by the build. Test programs and the shared `test_common` module
+compile to the project root directory.
 
 ## License
 
@@ -138,26 +140,56 @@ make clean all
 This compiles the package libraries into `com/fourjs/aim/` and the test programs
 into the project root directory.
 
-### Quick Test
+### Running the test programs
 
-After compilation, you can run one of the test programs:
+All test programs support a common command-line interface:
 
 ```
+fglrun <test_program> [OPTIONS] [key=value ...]
+```
+
+**Options:**
+- `--default` - Run with default hard-coded parameters
+- `--help` - Display usage with all available parameters and their defaults
+- No arguments displays the usage message
+
+**Examples:**
+
+```bash
+# Show usage and available parameters for Anthropic
+$ fglrun test_anthropic.42m --help
+
+# Run with defaults (tool calling mode)
 $ export ANTHROPIC_API_KEY="sk-ant-..."
+$ fglrun test_anthropic.42m --default
 
-$ fglrun test_anthropic.42m
-The exact geographic coordinates of London are:
+# Custom parameters
+$ fglrun test_anthropic.42m model=claude-sonnet-4-5 prompt="What is 2+2?" tools=false
 
-- **Latitude: 51.5074 N**
-- **Longitude: -0.1278 W** (or 0.1278 E)
-
-These coordinates point to the city center of London, England.
-The negative longitude value indicates it is located west of
-the Prime Meridian (0 longitude), which runs through Greenwich
-in London.
+# Override just the prompt (other params keep their defaults)
+$ fglrun test_anthropic.42m prompt="How much is 25 multiplied by 5?"
 ```
 
-Available test targets:
+Each test program documents its own parameters via `--help`. Common parameters
+across text generation providers include:
+
+| Parameter     | Description                       |
+|---------------|-----------------------------------|
+| `model`       | Model name                        |
+| `system`      | System message / instructions     |
+| `prompt`      | User prompt                       |
+| `max_tokens`  | Maximum output tokens             |
+| `temperature` | Sampling temperature (0.0-1.0)    |
+| `top_p`       | Nucleus sampling threshold        |
+| `tools`       | Enable tool calling (true/false)  |
+
+Some providers support additional parameters (e.g., `top_k`, `seed`,
+`frequency_penalty`, `presence_penalty`). The Ollama test exposes `base_url`
+and `tcp_port` for connecting to custom server instances. The vectors test
+accepts `provider`, `model`, `dimensions`, and `source` parameters.
+
+**Make targets** (run with `--default`):
+
 ```bash
 make test-anthropic
 make test-gemini
