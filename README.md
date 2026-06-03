@@ -84,6 +84,8 @@ Define the following environment variables, according to the AI provider:
   - GEMINI_API_KEY: The API Key
 - Mistral:
   - MISTRAL_API_KEY: The API Key
+- VoyageAI:
+  - VOYAGE_API_KEY: The API Key
 
 ### Compilation
 
