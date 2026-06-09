@@ -233,9 +233,6 @@ PUBLIC TYPE t_tool RECORD
 PUBLIC TYPE t_message_request RECORD
         model STRING,
         max_tokens INTEGER,
-        temperature FLOAT,
-        top_k FLOAT,
-        top_p FLOAT,
         speed STRING,
         system STRING,
         messages util.JSONArray,
@@ -249,7 +246,6 @@ PUBLIC FUNCTION (request t_message_request) set_defaults(
     INITIALIZE request.* TO NULL
     LET request.model = client.request.model
     LET request.messages = util.JSONArray.create()
-    LET request.temperature = 0.7
     LET request.max_tokens = 2048
 END FUNCTION
 
@@ -583,7 +579,7 @@ FUNCTION main()
 
     CALL initialize()
 
-    CALL client.set_defaults("claude-haiku-4-5")
+    CALL client.set_defaults("claude-opus-4-8")
     -- Can set API key here instead of using an env var
     -- LET client.connection.secret_key = "xxx"
 
