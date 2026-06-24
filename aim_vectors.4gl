@@ -163,6 +163,7 @@ PUBLIC TYPE t_text_embedding_request RECORD
         content t_content, -- Gemini
         model STRING,
         dimensions INTEGER,
+        output_dimensionality INTEGER, -- Gemini
         encoding_format STRING,
         user STRING
     END RECORD
@@ -173,6 +174,9 @@ PUBLIC TYPE t_text_embedding_response RECORD
             object STRING, -- "embedding"
             index INTEGER,
             embedding DYNAMIC ARRAY OF FLOAT
+        END RECORD,
+        embedding RECORD -- Gemini
+            values DYNAMIC ARRAY OF FLOAT
         END RECORD,
         model STRING,
         usage RECORD
@@ -188,7 +192,12 @@ PUBLIC FUNCTION (request t_text_embedding_request) set_defaults(
     INITIALIZE request.* TO NULL
     LET request.model = client.request.model
     IF dimensions IS NOT NULL THEN
-        LET request.dimensions = dimensions
+        CASE
+        WHEN request.model MATCHES "gemini*"
+            LET request.output_dimensionality = dimensions
+        OTHERWISE
+            LET request.dimensions = dimensions
+        END CASE
     END IF
 END FUNCTION
 
@@ -215,11 +224,11 @@ PUBLIC FUNCTION (client t_client) send_text_embedding_request(
     LET s = _check_client_info(client)
     IF s<0 THEN RETURN s END IF
     LET json_in = util.JSONObject.parse(util.JSON.stringifyOmitNulls(request))
-display "json_in:\n", util.JSON.format( json_in.toString() )
+--display "json_in:\n", util.JSON.format( json_in.toString() )
     CALL _post_request_command_json_to_json(client,"embeddings",json_in)
          RETURNING s, json_out
     IF s<0 THEN RETURN s END IF
-display "json_out:\n", util.JSON.format( json_out.toString() )
+--display "json_out:\n", util.JSON.format( json_out.toString() )
     CALL json_out.toFGL(response)
     RETURN 0
 END FUNCTION
@@ -227,8 +236,10 @@ END FUNCTION
 PUBLIC FUNCTION (response t_text_embedding_response) get_vector() RETURNS STRING
     IF response.data.getLength()>0 THEN
        RETURN util.JSON.stringify(response.data[1].embedding)
-    ELSE
-       RETURN NULL
     END IF
+    IF response.embedding.values.getLength()>0 THEN -- Gemini
+       RETURN util.JSON.stringify(response.embedding.values)
+    END IF
+    RETURN NULL
 END FUNCTION
 

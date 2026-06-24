@@ -244,7 +244,7 @@ FUNCTION main()
 
     CALL aim_common.initialize()
 
-    CALL client.set_defaults("claude-haiku-4-5")
+    CALL client.set_defaults("claude-opus-4-8")
 
     CALL request.set_defaults(client)
     CALL request.set_system_message("You are a Math teacher.")
@@ -299,6 +299,82 @@ FUNCTION main()
     END IF
 
     CALL aim_common.cleanup()
+END FUNCTION
+```
+
+### Example: Text completion using tools with Google Gemini
+
+```4gl
+IMPORT FGL com.fourjs.aim.aim_common
+IMPORT FGL com.fourjs.aim.aim_gemini
+
+FUNCTION main()
+    DEFINE client aim_gemini.t_client
+    DEFINE request aim_gemini.t_text_request
+    DEFINE response aim_gemini.t_text_response
+    DEFINE x, tx, s INTEGER
+
+    CALL aim_common.initialize()
+
+    CALL client.set_defaults("gemini-3-flash-preview")
+
+    CALL request.set_defaults(client)
+    VAR mycallback aim_common.t_tool_function_dispatcher = FUNCTION exec_tools
+    CALL request.set_system_instruction("You are a Math teacher.")
+    LET x = request.append_user_content("Use provided tools to generate the result.")
+
+    VAR tps1 aim_common.t_tool_signature_params = [
+          (name:"operand_1", type:"number", description:"First operand.", required: TRUE ),
+          (name:"operand_2", type:"number", description:"Second operand.", required: TRUE )
+        ]
+    LET tx = request.append_tool_definition("multiplication","Multiplies two numbers.",tps1)
+
+    VAR tps2 aim_common.t_tool_signature_params = [
+          (name:"dividend", type:"number", description:"The dividend operand.", required: TRUE ),
+          (name:"divisor", type:"number", description:"The divisor operand.", required: TRUE )
+        ]
+    LET tx = request.append_tool_definition("integer_division","Divides two integer numbers and produces a quotient and remainder.",tps2)
+
+    --LET x = request.append_user_content("How much is 25 multiplied by 5?")
+    LET x = request.append_user_content("What is the quotient and remainder of 13 divided by 5?")
+
+    LET s = client.create_response(request,response)
+    WHILE s == 1 -- tool calls required, we loop until done
+        LET s = client.continue_response(request,response,mycallback)
+    END WHILE
+    IF s == 0 THEN
+       DISPLAY response.get_content_text(1)
+    ELSE
+       DISPLAY aim_common.get_error_message(s)
+       DISPLAY "HTTP post status: ", aim_common.get_last_http_post_status()
+       DISPLAY "HTTP post description : ", aim_common.get_last_http_post_description()
+    END IF
+
+    CALL aim_common.cleanup()
+END FUNCTION
+
+PRIVATE FUNCTION exec_tools(
+    name STRING,
+    params DICTIONARY OF STRING,
+    results DICTIONARY OF STRING
+) RETURNS INTEGER
+    CASE name
+    WHEN "multiplication"
+       VAR o1 DECIMAL = params["operand_1"]
+       VAR o2 DECIMAL = params["operand_2"]
+       VAR rs DECIMAL = ( o1 * o2 )
+       LET results["result"] = rs
+       RETURN 0
+    WHEN "integer_division"
+       VAR dt INTEGER = params["dividend"]
+       VAR dv INTEGER = params["divisor"]
+       VAR rs INTEGER = ( dt / dv )
+       VAR rm INTEGER = ( dt MOD dv )
+       LET results["quotient"] = rs
+       LET results["remainder"] = rm
+       RETURN 0
+    OTHERWISE RETURN -1
+    END CASE
 END FUNCTION
 ```
 

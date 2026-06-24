@@ -329,7 +329,7 @@ FUNCTION main()
 
     CALL aim_common.initialize()
 
-    CALL client.set_defaults("claude-haiku-4-5")
+    CALL client.set_defaults("claude-opus-4-8")
 
     CALL request.set_defaults(client)
     CALL request.set_system_message("You are a helpful assistant.")
