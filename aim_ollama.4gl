@@ -283,25 +283,3 @@ PUBLIC FUNCTION (client t_client) create_response(
 --display "json_out:\n", util.JSON.format( json_out.toString() )
     RETURN 0
 END FUNCTION
-
-FUNCTION main()
-    DEFINE client t_client
-    DEFINE request t_response_request
-    DEFINE response t_response
-    DEFINE s INTEGER
-    CALL initialize()
-    CALL client.set_defaults("llama3.1")
-    -- No API key required...
-    CALL request.set_defaults(client)
-    CALL request.set_system_message("You are a Math teacher.\n Answer with precise instructions.")
-    CALL request.set_prompt_message("How to compute the area of a circle?")
-    LET s = client.create_response(request,response)
-    IF s == 0 THEN
-       DISPLAY response.response
-    ELSE
-       DISPLAY get_error_message(s)
-       DISPLAY "HTTP post status: ", get_last_http_post_status()
-       DISPLAY "HTTP post description : ", get_last_http_post_description()
-    END IF
-    CALL cleanup()
-END FUNCTION

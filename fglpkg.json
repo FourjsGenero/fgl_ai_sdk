@@ -1,0 +1,41 @@
+{
+  "name": "fgl_ai_sdk_3",
+  "version": "1.0.0",
+  "description": "Genero BDL SDK for AI provider APIs",
+  "author": "Sebastien FLAESCH",
+  "license": "MIT",
+  "repository": "https://github.com/FourjsGenero/fgl_ai_sdk",
+  "keywords": [
+    "LLM",
+    "AI",
+    "API",
+    "SDK",
+    "Vector Embeddings",
+    "Vector",
+    "Gemini",
+    "Anthropic",
+    "OpenAI",
+    "Mistral",
+    "VoyageAI",
+    "Ollama"
+  ],
+  "visibility": "public",
+  "genero": ">=6.0.0",
+  "dependencies": {},
+  "root": ".",
+  "files": [
+    "*.42m",
+    "*.4gl"
+  ],
+  "docs": [
+    "README.md"
+  ],
+  "programs": [
+    "tests/test_anthropic",
+    "tests/test_gemini",
+    "tests/test_openai",
+    "tests/test_mistral",
+    "tests/test_ollama",
+    "tests/test_vectors"
+  ]
+}

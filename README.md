@@ -23,29 +23,29 @@ YOU MUST EVALUATE THE SECURITY, PRIVACY, AND CONFIDENTIALITY IMPLICATIONS OF SHA
 INFORMATION WITH THESE PROVIDERS. THE AUTHORS ARE NOT LIABLE FOR ANY DATA BREACHES OR MISUSE
 OF INFORMATION BY THIRD-PARTY AI ENTITIES.
 
-## Supported AI providers and services
+## Overview
 
-Supported AI Providers:
-- Anthropic/Claude
-- OpenAI/GPT
-- Google/Gemini
-- Mistral
-- Ollama
+The FGL AI SDK package (`fgl_ai_sdk`) provides a Genero BDL library for integrating with
+AI provider APIs. It supports text generation (chat completions) and text embedding across
+multiple providers through a consistent module structure.
 
-Supported AI services:
+| Service | Module | Provider |
+|---------|--------|----------|
+| **Text Generation** | `aim_anthropic` | Anthropic / Claude |
+| **Text Generation** | `aim_openai` | OpenAI / GPT |
+| **Text Generation** | `aim_gemini` | Google / Gemini |
+| **Text Generation** | `aim_mistral` | Mistral |
+| **Text Generation** | `aim_ollama` | Ollama (local) |
+| **Text Embedding** | `aim_vectors` | OpenAI, Gemini, Mistral, VoyageAI |
+| **Test Program** | `tests/test_anthropic` | Anthropic / Claude |
+| **Test Program** | `tests/test_openai` | OpenAI / GPT |
+| **Test Program** | `tests/test_gemini` | Google / Gemini |
+| **Test Program** | `tests/test_mistral` | Mistral |
+| **Test Program** | `tests/test_ollama` | Ollama (local) |
+| **Test Program** | `tests/test_vectors` | Text Embeddings |
 
-- Text Generation
-  - Anthropic/Claude with `aim_anthropic.4gl`
-  - OpenAI/GPT with `aim_openai.4gl`
-  - Google/Gemini with `aim_gemini.4gl`
-  - Mistral with `aim_mistral.4gl`
-  - Ollama with `aim_ollama.4gl`
-
-- Text Embedding with `aim_vector.4gl`
-  - OpenAI text embedding
-  - Gemini text embedding
-  - Mistral text embedding
-  - VoyageAI text embedding
+Each provider module follows the same pattern: create a client, configure a request,
+send it, and process the response.
 
 ## License
 
@@ -53,8 +53,42 @@ This source code is under [MIT license](./LICENSE)
 
 ## Prerequisites
 
-* Latest Genero version
+- Genero BDL 6.x or later
 * GNU Make
+- An API key from at least one supported AI provider
+
+
+## AI Concepts
+
+### Text Generation (Chat Completion)
+
+Text generation APIs accept a conversation (a sequence of messages with roles like
+"user", "assistant", and "system") and return a model-generated response. Common
+use cases include:
+
+- **Chat assistants** -- multi-turn conversations with context
+- **Content generation** -- drafting text, summaries, translations
+- **Structured output** -- generating JSON responses conforming to a schema
+- **Tool use (function calling)** -- the model can request execution of tools you
+  define, enabling it to retrieve data or perform actions
+
+The SDK supports tool use for Anthropic, OpenAI, Gemini, and Mistral. You define
+tool signatures with parameter schemas, and the SDK handles the request/response
+cycle including tool result submission.
+
+### Text Embedding
+
+Text embedding APIs convert text into dense numeric vectors (arrays of floats) that
+capture semantic meaning. These vectors can be used for:
+
+- **Semantic search** -- find documents similar to a query
+- **Clustering** -- group related content
+- **Classification** -- categorize text by comparing embeddings
+- **RAG (Retrieval-Augmented Generation)** -- retrieve relevant context before
+  generating a response
+
+The `aim_vectors` module provides a unified interface for embedding generation across
+multiple providers.
 
 ## Usage
 
@@ -90,18 +124,25 @@ Define the following environment variables, according to the AI provider:
 ### Compilation
 
 ```bash
-make clean all
+$ export FGLLDPATH=<repository-root-dir>
+
+$ make clean all
+
+$ cd tests
+
+$ make clean all
 ```
 
 ### Quick Test
 
-After compilation, you can directly run one of the aim_* modules:
-Each module includes a `main()` function that does some tests.
+After building the 42m modules:
 
 ```
 $ export ANTHROPIC_API_KEY="sk-ant-..."
 
-$ fglrun aim_anthropic.42m
+$ export FGLLDPATH=<repository-root-dir>
+
+$ fglrun tests/test_anthropic
 The exact geographic coordinates of London are:
 
 - **Latitude: 51.5074° N**
@@ -120,30 +161,34 @@ in London.
 ```4gl
 IMPORT FGL aim_anthropic
 
-DEFINE client aim_anthropic.t_client
-DEFINE request aim_anthropic.t_message_request
-DEFINE response aim_anthropic.t_response
-DEFINE x, tx, s INTEGER
+MAIN
 
-CALL aim_anthropic.initialize()
+    DEFINE client aim_anthropic.t_client
+    DEFINE request aim_anthropic.t_message_request
+    DEFINE response aim_anthropic.t_response
+    DEFINE x, tx, s INTEGER
 
-CALL client.set_defaults("claude-haiku-4-5")
-LET client.connection.secret_key = "...." -- API Key
+    CALL aim_anthropic.initialize()
 
-CALL request.set_defaults(client)
-CALL request.set_system_message("You are a Math teacher.")
-LET x = request.append_user_message("Answer with precise instructions.")
-LET x = request.append_user_message("How to compute the area of a circle?")
-LET s = client.create_message(request,response)
-IF s == 0 THEN
-   DISPLAY response.get_content_text(1)
-ELSE
-   DISPLAY aim_anthropic.get_error_message(s)
-   DISPLAY "HTTP post status: ", aim_anthropic.get_last_http_post_status()
-   DISPLAY "HTTP post description : ", aim_anthropic.get_last_http_post_description()
-END IF
+    CALL client.set_defaults("claude-haiku-4-5")
+    LET client.connection.secret_key = "...." -- API Key
 
-CALL aim_anthropic.cleanup()
+    CALL request.set_defaults(client)
+    CALL request.set_system_message("You are a Math teacher.")
+    LET x = request.append_user_message("Answer with precise instructions.")
+    LET x = request.append_user_message("How to compute the area of a circle?")
+    LET s = client.create_message(request,response)
+    IF s == 0 THEN
+        DISPLAY response.get_content_text(1)
+    ELSE
+        DISPLAY aim_anthropic.get_error_message(s)
+        DISPLAY "HTTP post status: ", aim_anthropic.get_last_http_post_status()
+        DISPLAY "HTTP post description : ", aim_anthropic.get_last_http_post_description()
+    END IF
+
+    CALL aim_anthropic.cleanup()
+
+END MAIN
 ```
 
 ### Example: Text embedding generation with Gemini Embedding
@@ -151,67 +196,76 @@ CALL aim_anthropic.cleanup()
 ```4gl
 IMPORT FGL aim_vectors
 
-DEFINE s INTEGER
-DEFINE client aim_vectors.t_client
-DEFINE request aim_vectors.t_text_embedding_request
-DEFINE response aim_vectors.t_text_embedding_response
-DEFINE source TEXT
-DEFINE vector STRING
+MAIN
 
-IF num_args()<>1 THEN
-   DISPLAY SFMT("Usage: fglrun %1 <text-file>", arg_val(0))
-   EXIT PROGRAM 1
-END IF
+    DEFINE s INTEGER
+    DEFINE client aim_vectors.t_client
+    DEFINE request aim_vectors.t_text_embedding_request
+    DEFINE response aim_vectors.t_text_embedding_response
+    DEFINE source TEXT
+    DEFINE vector STRING
 
-CALL aim_vectors.initialize()
+    IF num_args()<>1 THEN
+        DISPLAY SFMT("Usage: fglrun %1 <text-file>", arg_val(0))
+        EXIT PROGRAM 1
+    END IF
 
-CALL client.set_defaults("gemini","gemini-embedding-001")
-LET client.connection.secret_key = "...." -- API Key
+    CALL aim_vectors.initialize()
 
-CALL request.set_defaults(client,NULL)
+    CALL client.set_defaults("gemini","gemini-embedding-001")
+    LET client.connection.secret_key = "...." -- API Key
 
-LOCATE source IN FILE arg_val(1)
-CALL request.set_source(source)
-LET s = client.send_text_embedding_request(request,response)
-IF s == 0 THEN
-   LET vector = response.get_vector()
-   DISPLAY vector
-ELSE
-   DISPLAY aim_vectors.get_error_message(s)
-   LET vector = NULL
-END IF
+    CALL request.set_defaults(client,NULL)
 
-CALL aim_vectors.cleanup()
+    LOCATE source IN FILE arg_val(1)
+    CALL request.set_source(source)
+    LET s = client.send_text_embedding_request(request,response)
+    IF s == 0 THEN
+        LET vector = response.get_vector()
+        DISPLAY vector
+    ELSE
+        DISPLAY aim_vectors.get_error_message(s)
+        LET vector = NULL
+    END IF
+
+    CALL aim_vectors.cleanup()
+
+END MAIN
 ```
 
 ### Example: Text completion using tools with Google Gemini
 ```4gl
-    DEFINE client t_client
-    DEFINE request t_text_request
-    DEFINE response t_text_response
+IMPORT FGL aim_gemini
+
+MAIN
+
+    DEFINE client aim_gemini.t_client
+    DEFINE request aim_gemini.t_text_request
+    DEFINE response aim_gemini.t_text_response
     DEFINE x, tx, s INTEGER
 
-    CALL initialize()
+    CALL aim_gemini.initialize()
 
     CALL client.set_defaults("gemini-3-flash-preview")
     LET client.connection.secret_key = "...." -- API Key
 
     CALL request.set_defaults(client)
-    VAR mycallback t_tool_function_dispatcher = FUNCTION exec_tools
+    VAR mycallback aim_gemini.t_tool_function_dispatcher = FUNCTION exec_tools
     CALL request.set_system_instruction("You are a Math teacher.")
     LET x = request.append_user_content("Use provided tools to generate the result.")
 
-    VAR tps1 t_tool_signature_params = [
+    VAR tps1 aim_gemini.t_tool_signature_params = [
           (name:"operand_1", type:"number", description:"First operand.", required: TRUE ),
           (name:"operand_2", type:"number", description:"Second operand.", required: TRUE )
         ]
     LET tx = request.append_tool_definition("multiplication","Multiplies two numbers.",tps1)
 
-    VAR tps2 t_tool_signature_params = [
+    VAR tps2 aim_gemini.t_tool_signature_params = [
           (name:"dividend", type:"number", description:"The dividend operand.", required: TRUE ),
           (name:"divisor", type:"number", description:"The divisor operand.", required: TRUE )
         ]
-    LET tx = request.append_tool_definition("integer_division","Divides two integer numbers and produces a quotient and remainder.",tps2)
+    LET tx = request.append_tool_definition("integer_division",
+            "Divides two integer numbers and produces a quotient and remainder.",tps2)
 
     --LET x = request.append_user_content("How much is 25 multiplied by 5?")
     LET x = request.append_user_content("What is the quotient and remainder of 13 divided by 5?")
@@ -221,16 +275,16 @@ CALL aim_vectors.cleanup()
         LET s = client.continue_response(request,response,mycallback)
     END WHILE
     IF s == 0 THEN
-       DISPLAY response.get_content_text(1)
+        DISPLAY response.get_content_text(1)
     ELSE
-       DISPLAY get_error_message(s)
-       DISPLAY "HTTP post status: ", get_last_http_post_status()
-       DISPLAY "HTTP post description : ", get_last_http_post_description()
+        DISPLAY aim_gemini.get_error_message(s)
+        DISPLAY "HTTP post status: ", aim_gemini.get_last_http_post_status()
+        DISPLAY "HTTP post description : ", aim_gemini.get_last_http_post_description()
     END IF
 
-    CALL cleanup()
+    CALL aim_gemini.cleanup()
 
-END FUNCTION
+END MAIN
 
 PRIVATE FUNCTION exec_tools(
     name STRING,
