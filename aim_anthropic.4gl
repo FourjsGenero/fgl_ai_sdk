@@ -254,6 +254,9 @@ PUBLIC TYPE t_response_content RECORD
         type STRING,
         -- For type=text
         text STRING,
+        -- For type=thinking
+        thinking STRING,
+        signature STRING,
         -- For type=tool_use
         id STRING,
         name STRING,
@@ -453,13 +456,37 @@ PUBLIC FUNCTION (req t_message_request) append_tool_definition(
     RETURN x
 END FUNCTION
 
+PUBLIC FUNCTION (res t_response) get_content_thinking(
+    x INTEGER
+) RETURNS STRING
+    DEFINE n, x2 INTEGER
+    CALL _assert( (x>0), SFMT("Invalid index: %1",x) )
+    LET x2 = 0
+    FOR n=1 TO res.content.getLength()
+        IF res.content[n].type == "thinking" THEN
+            LET x2 = x2+1
+            IF x2 == x THEN
+                RETURN res.content[n].thinking
+            END IF
+        END IF
+    END FOR
+    RETURN NULL
+END FUNCTION
+
 PUBLIC FUNCTION (res t_response) get_content_text(
     x INTEGER
 ) RETURNS STRING
+    DEFINE n, x2 INTEGER
     CALL _assert( (x>0), SFMT("Invalid index: %1",x) )
-    IF x>0 AND x <= res.content.getLength() THEN
-        RETURN res.content[x].text
-    END IF
+    LET x2 = 0
+    FOR n=1 TO res.content.getLength()
+        IF res.content[n].type == "text" THEN
+            LET x2 = x2+1
+            IF x2 == x THEN
+                RETURN res.content[n].text
+            END IF
+        END IF
+    END FOR
     RETURN NULL
 END FUNCTION
 
@@ -579,7 +606,7 @@ FUNCTION main()
 
     CALL initialize()
 
-    CALL client.set_defaults("claude-opus-4-8")
+    CALL client.set_defaults("claude-opus-5")
     -- Can set API key here instead of using an env var
     -- LET client.connection.secret_key = "xxx"
 
